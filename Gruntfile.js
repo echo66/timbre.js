@@ -15,7 +15,7 @@ module.exports = function(grunt) {
             options: {
                 curly   : true,
                 eqeqeq  : true,
-                latedef : true,
+                latedef : false,
                 noarg   : true,
                 noempty : true,
                 quotmark: "double",

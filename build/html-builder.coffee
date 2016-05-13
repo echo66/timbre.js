@@ -1,6 +1,6 @@
 fs     = require 'fs'
 path   = require 'path'
-jade   = require 'jade'
+pug   = require 'pug'
 marked = require 'marked'
 
 isDev = false
@@ -54,7 +54,7 @@ class HTMLBuilder
         html = lang_process  html
         html = insert_canvas html
         html = insert_label  html
-        html = jade.compile(fs.readFileSync("#{__dirname}/common.jade"))
+        html = pug.compile(fs.readFileSync("#{__dirname}/common.jade"))
             lang: doc.lang, title: doc.title, main: html
             version: @version
             indexes:indexes, categories:[
@@ -168,7 +168,7 @@ class DocFileBuilder extends HTMLBuilder
 
     @build_statics = (langlist=['en', 'ja'])->
         for lang in langlist
-            dstpath = path.normalize("#{__dirname}/..")
+            dstpath = path.normalize("#{__dirname}/../doc")
             if lang != 'en' then dstpath += "/#{lang}"
             unless fs.existsSync dstpath
                 fs.mkdir dstpath
@@ -182,7 +182,7 @@ class TestBuilder
     build: (name)->
         testcode = if name then getTestCode(name) else getAllTestCode()
         name ?= 'all test'
-        jade.compile(fs.readFileSync("#{__dirname}/test.jade"))
+        pug.compile(fs.readFileSync("#{__dirname}/test.jade"))
             name:name, testcode:testcode
 
     getTestCode = (name)->

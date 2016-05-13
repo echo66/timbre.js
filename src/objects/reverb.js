@@ -8,6 +8,10 @@
         T.Object.call(this, 2, _args);
         fn.fixAR(this);
 
+        this._._room = T(0.5);
+        this._._damp = T(0.5);
+        this._._mix = T(0.33);
+
         this._.reverb = new Reverb(this._.samplerate, this._.cellsize);
     }
     fn.extend(ReverbNode);
@@ -17,35 +21,26 @@
     Object.defineProperties($, {
         room: {
             set: function(value) {
-                if (typeof value === "number") {
-                    value = (value > 1) ? 1 : (value < 0) ? 0 : value;
-                    this._.reverb.setRoomSize(value);
-                }
+                this._._room = T(value);
             },
             get: function() {
-                return this._.reverb.roomsize;
+                return this._._room;
             }
         },
         damp: {
             set: function(value) {
-                if (typeof value === "number") {
-                    value = (value > 1) ? 1 : (value < 0) ? 0 : value;
-                    this._.reverb.setDamp(value);
-                }
+                this._._damp = T(value);
             },
             get: function() {
-                return this._.reverb.damp;
+                return this._._damp;
             }
         },
         mix: {
             set: function(value) {
-                if (typeof value === "number") {
-                    value = (value > 1) ? 1 : (value < 0) ? 0 : value;
-                    this._.reverb.wet = value;
-                }
+                this._._mix = T(value);
             },
             get: function() {
-                return this._.reverb.wet;
+                return this._._mix;
             }
         }
     });
@@ -57,6 +52,10 @@
             this.tickID = tickID;
 
             fn.inputSignalAR(this);
+
+            _.reverb.setRoomSize(Math.min(1, Math.max(0,_._room.process(tickID).cells[0][0])));
+            _.reverb.setDamp(Math.min(1, Math.max(0,_._damp.process(tickID).cells[0][0])));
+            _.reverb.wet = Math.min(1, Math.max(0,_._mix.process(tickID).cells[0][0]));
 
             if (!_.bypassed) {
                 _.reverb.process(this.cells[1], this.cells[2]);

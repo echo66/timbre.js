@@ -1986,12 +1986,7 @@
         };
 
         $.getAdjustSamples = function(samplerate) {
-            var samples, bits;
-            samplerate = samplerate || this.samplerate;
-            samples = this.streammsec / 1000 * samplerate;
-            bits = Math.ceil(Math.log(samples) * Math.LOG2E);
-            bits = (bits < 8) ? 8 : (bits > 14) ? 14 : bits;
-            return 1 << bits;
+            return 2048;
         };
 
         $.play = function() {
