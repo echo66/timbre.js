@@ -12177,7 +12177,7 @@ Mad.Error = {
   LOSTSYNC       : 0x0101,      /* lost synchronization */
   BADLAYER       : 0x0102,      /* reserved header layer value */
   BADBITRATE     : 0x0103,      /* forbidden bitrate value */
-  BADSAMPLERATE  : 0x0104,      /* reserved sample frequency value */
+  BADsampleRate  : 0x0104,      /* reserved sample frequency value */
   BADEMPHASIS    : 0x0105,      /* reserved emphasis value */
 
   BADCRC         : 0x0201,      /* CRC check failed */
@@ -13327,7 +13327,7 @@ Mad.III_decode = function (ptr, frame, si, nch) {
     var sfreqi;
     
     {
-        var sfreq = header.samplerate;
+        var sfreq = header.sampleRate;
 
         if (header.flags & Mad.Flag.MPEG_2_5_EXT)
             sfreq *= 2;
@@ -14085,7 +14085,7 @@ var bitrate_table /* [5][15] */ = [
     64000,  80000,  96000, 112000, 128000, 144000, 160000 ] /* II & III  */
     ];
 
-    var samplerate_table /* [3] */ = [ 44100, 48000, 32000 ];
+    var sampleRate_table /* [3] */ = [ 44100, 48000, 32000 ];
 
     var decoder_table = [
     function() {
@@ -14124,7 +14124,7 @@ Mad.Header = function () {
     this.emphasis       = 0;            /* de-emphasis to use (see above) */    
 
     this.bitrate        = 0;            /* stream bitrate (bps) */
-    this.samplerate     = 0;            /* sampling frequency (Hz) */
+    this.sampleRate     = 0;            /* sampling frequency (Hz) */
 
     this.crc_check      = 0;            /* frame CRC accumulator */
     this.crc_target     = 0;            /* final target CRC checksum */
@@ -14202,17 +14202,17 @@ Mad.Header.actually_decode = function(stream) {
     index = stream.ptr.read(2);
 
     if (index === 3) {
-        stream.error = Mad.Error.BADSAMPLERATE;
+        stream.error = Mad.Error.BADsampleRate;
         return header;
     }
 
-    header.samplerate = samplerate_table[index];
+    header.sampleRate = sampleRate_table[index];
 
     if (header.flags & Mad.Flag.LSF_EXT) {
-        header.samplerate /= 2;
+        header.sampleRate /= 2;
 
         if (header.flags & Mad.Flag.MPEG_2_5_EXT)
-            header.samplerate /= 2;
+            header.sampleRate /= 2;
     }
 
     /* padding_bit */
@@ -14331,10 +14331,10 @@ Mad.Header.decode = function(stream) {
 
         //console.log("=============== Decoding layer " + header.layer + " audio mode " +
         //     header.mode + " with " + header.bitrate +
-        //     " bps and a samplerate of " + header.samplerate);
+        //     " bps and a sampleRate of " + header.sampleRate);
 
         /* calculate frame duration */
-        //mad_timer_set(&header.duration, 0, 32 * MAD_NSBSAMPLES(header), header.samplerate);
+        //mad_timer_set(&header.duration, 0, 32 * MAD_NSBSAMPLES(header), header.sampleRate);
 
         /* calculate free bit rate */
         if (header.bitrate === 0) {
@@ -14355,13 +14355,13 @@ Mad.Header.decode = function(stream) {
         pad_slot = (header.flags & Mad.Flag.PADDING) ? 1 : 0;
 
         if (header.layer === Mad.Layer.I) {
-            N = (((12 * header.bitrate / header.samplerate) << 0) + pad_slot) * 4;
+            N = (((12 * header.bitrate / header.sampleRate) << 0) + pad_slot) * 4;
         } else {
             var slots_per_frame = (header.layer === Mad.Layer.III &&
                     (header.flags & Mad.Flag.LSF_EXT)) ? 72 : 144;
-            //console.log("slots_per_frame = " + slots_per_frame + ", bitrate = " + header.bitrate + ", samplerate = " + header.samplerate);
+            //console.log("slots_per_frame = " + slots_per_frame + ", bitrate = " + header.bitrate + ", sampleRate = " + header.sampleRate);
 
-            N = ((slots_per_frame * header.bitrate / header.samplerate) << 0) + pad_slot;
+            N = ((slots_per_frame * header.bitrate / header.sampleRate) << 0) + pad_slot;
         }
 
 
@@ -14493,7 +14493,7 @@ Mad.Synth = function () {
     this.phase = 0;
     
     this.pcm = {
-        samplerate: 0,
+        sampleRate: 0,
         channels: 0,
         length: 0,
         samples: [
@@ -14506,7 +14506,7 @@ Mad.Synth = function () {
     
     // this.pcm.clone = function() {
     //     var copy = {};
-    //     copy.samplerate = this.samplerate;
+    //     copy.sampleRate = this.sampleRate;
     //     copy.channels = this.channels;
     //     copy.length = this.length;
     //     copy.samples = [
@@ -15776,18 +15776,18 @@ Mad.Synth.prototype.frame = function (frame) {
     var nch = frame.header.nchannels();
     var ns  = frame.header.nbsamples();
 
-    this.pcm.samplerate = frame.header.samplerate;
+    this.pcm.sampleRate = frame.header.sampleRate;
     this.pcm.channels   = nch;
     this.pcm.length     = 32 * ns;
 
     //console.log("ns: " + ns);
 
     /*
-     if (frame.options & Mad.Option.HALFSAMPLERATE) {
-     this.pcm.samplerate /= 2;
+     if (frame.options & Mad.Option.HALFsampleRate) {
+     this.pcm.sampleRate /= 2;
      this.pcm.length     /= 2;
 
-     throw new Error("HALFSAMPLERATE is not supported. What do you think? As if I have the time for this");
+     throw new Error("HALFsampleRate is not supported. What do you think? As if I have the time for this");
      }
      */
 
@@ -17774,9 +17774,9 @@ Mad.Player.prototype.createDevice = function() {
     }
 
     this.channelCount = this.frame.header.nchannels();
-    this.sampleRate = this.frame.header.samplerate;
+    this.sampleRate = this.frame.header.sampleRate;
 
-    //console.log("this.playing " + this.channelCount + " channels, samplerate = " + this.sampleRate + " audio, mode " + this.frame.header.mode);
+    //console.log("this.playing " + this.channelCount + " channels, sampleRate = " + this.sampleRate + " audio, mode " + this.frame.header.mode);
 
     this.offset = 0;
     this.absoluteFrameIndex = 0;

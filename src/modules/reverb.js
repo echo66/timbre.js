@@ -8,11 +8,11 @@
     var CombParams    = [1116,1188,1277,1356,1422,1491,1557,1617];
     var AllpassParams = [225,556,441,341];
 
-    function Reverb(samplerate, buffersize) {
-        this.samplerate = samplerate;
+    function Reverb(sampleRate, buffersize) {
+        this.sampleRate = sampleRate;
 
         var i, imax;
-        var k = samplerate / 44100;
+        var k = sampleRate / 44100;
 
         imax = CombParams.length * 2;
         this.comb = new Array(imax);

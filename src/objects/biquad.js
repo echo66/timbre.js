@@ -11,7 +11,7 @@
         fn.fixAR(this);
 
         var _ = this._;
-        _.biquad = new Biquad(_.samplerate);
+        _.biquad = new Biquad(_.sampleRate);
         _.freq = T(340);
         _.band = T(1);
         _.gain = T(0);
@@ -25,7 +25,7 @@
     var plotBefore = function(context, x, y, width, height) {
         context.lineWidth = 1;
         context.strokeStyle = "rgb(192, 192, 192)";
-        var nyquist = this._.samplerate * 0.5;
+        var nyquist = this._.sampleRate * 0.5;
         for (var i = 1; i <= 10; ++i) {
             for (var j = 1; j <= 4; j++) {
                 var f = i * Math.pow(10, j);
@@ -150,19 +150,19 @@
 
     $.plot = function(opts) {
         if (this._.plotFlush) {
-            var biquad = new Biquad(this._.samplerate);
+            var biquad = new Biquad(this._.sampleRate);
             biquad.setType(this.type);
             biquad.setParams(this.freq.valueOf(), this.band.valueOf(), this.gain.valueOf());
 
-            var impluse = new Float32Array(fft.length);
-            impluse[0] = 1;
+            var impulse = new Float32Array(fft.length);
+            impulse[0] = 1;
 
-            biquad.process(impluse, impluse);
-            fft.forward(impluse);
+            biquad.process(impulse, impulse);
+            fft.forward(impulse);
 
-            var size = 512;
+            var size = opts.size || 512;
             var data = new Float32Array(size);
-            var nyquist  = this._.samplerate * 0.5;
+            var nyquist  = this._.sampleRate * 0.5;
             var spectrum = new Float32Array(size);
             var i, j, f, index, delta, x0, x1, xx;
 

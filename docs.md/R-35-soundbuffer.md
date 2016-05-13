@@ -10,7 +10,7 @@ ja: 以下はサンプルレート 44.1KHzの 1秒間の `SoundBuffer` を表わ
 ```js
 var soundbuffer = {
   buffer    : new Float32Array(44100),
-  samplerate: 44100
+  sampleRate: 44100
 };
 ```
 
@@ -27,7 +27,7 @@ for (var i = 0; i < buffer.length; i++) {
   buffer[i] = Math.sin(Math.PI * 0.001 * i) * (i/len) * (1-(i/len)) * 2;
 }
 
-buffer = { buffer:buffer, samplerate:22050 };
+buffer = { buffer:buffer, sampleRate:22050 };
 
 T("buffer", {buffer:buffer, pitch:50, loop:true}).plot({target:canvas}).play();
 ```

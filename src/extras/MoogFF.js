@@ -42,7 +42,7 @@
         _.freq = T(100);
         _.gain = T(2);
 
-        _.sr = T.samplerate;
+        _.sr = T.sampleRate;
         _.t  = 1 / _.sr;
         _.b0 = _.a1 = _.wcD = 0;
         _.s1 = _.s2 = _.s3 = _.s4 = 0;

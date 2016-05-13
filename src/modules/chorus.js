@@ -1,10 +1,10 @@
 (function(T) {
     "use strict";
 
-    function Chorus(samplerate) {
-        this.samplerate = samplerate;
+    function Chorus(sampleRate) {
+        this.sampleRate = sampleRate;
 
-        var bits = Math.round(Math.log(samplerate * 0.1) * Math.LOG2E);
+        var bits = Math.round(Math.log(sampleRate * 0.1) * Math.LOG2E);
         this.buffersize = 1 << bits;
         this.bufferL = new T.fn.SignalArray(this.buffersize + 1);
         this.bufferR = new T.fn.SignalArray(this.buffersize + 1);
@@ -58,7 +58,7 @@
 
     $.setDelayTime = function(delayTime) {
         this.delayTime = delayTime;
-        var readIndex = this.writeIndex - ((delayTime * this.samplerate * 0.001)|0);
+        var readIndex = this.writeIndex - ((delayTime * this.sampleRate * 0.001)|0);
         while (readIndex < 0) {
             readIndex += this.buffersize;
         }
@@ -67,7 +67,7 @@
 
     $.setRate = function(rate) {
         this.rate      = rate;
-        this.phaseIncr = (512 * this.rate / this.samplerate) * this.phaseStep;
+        this.phaseIncr = (512 * this.rate / this.sampleRate) * this.phaseStep;
     };
 
     $.process = function(cellL, cellR) {

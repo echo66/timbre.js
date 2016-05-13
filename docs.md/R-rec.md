@@ -23,7 +23,7 @@ T("mouse").start();
 ## Properties ##
 - `timeout` _(Number or timevalue)_
 ja:  - 録音時間. デフォルト値は **5000ms**
-- `samplerate` _(Number)_
+- `sampleRate` _(Number)_
 - `currentTime` _(ReadOnly Number)_
 
 ## Methods ##
@@ -45,4 +45,4 @@ ja:- 前処理として録音データを扱いたい場合は [`timbre.rec`](./
 ## Source ##
 https://github.com/mohayonao/timbre.js/blob/master/src/objects/rec.js
 
-<script src="/timbre.js/src/extras/mouse.js"></script>
+<script src="../src/extras/mouse.js"></script>

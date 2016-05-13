@@ -13,7 +13,7 @@
 
         var _ = this._;
         _.pitch      = T(1);
-        _.samplerate = 44100;
+        _.sampleRate = 44100;
         _.channels   = 0;
         _.bufferMix  = null;
         _.buffer     = [];
@@ -46,7 +46,7 @@
     var setBuffer = function(value) {
         var _ = this._;
         if (typeof value === "object") {
-            var buffer = [], samplerate, channels;
+            var buffer = [], sampleRate, channels;
 
             if (isSignalArray(value)) {
                 buffer[0] = value;
@@ -72,19 +72,19 @@
                     channels = 1;
                     buffer = [value.buffer];
                 }
-                if (typeof value.samplerate === "number") {
-                    samplerate = value.samplerate;
+                if (typeof value.sampleRate === "number") {
+                    sampleRate = value.sampleRate;
                 }
             }
             if (buffer.length) {
-                if (samplerate > 0) {
-                    _.samplerate = value.samplerate;
+                if (sampleRate > 0) {
+                    _.sampleRate = value.sampleRate;
                 }
                 _.bufferMix = null;
                 _.buffer  = buffer;
                 _.phase     = 0;
-                _.phaseIncr = _.samplerate / T.samplerate;
-                _.duration  = _.buffer[0].length * 1000 / _.samplerate;
+                _.phaseIncr = _.sampleRate / T.sampleRate;
+                _.duration  = _.buffer[0].length * 1000 / _.sampleRate;
                 _.currentTime = 0;
                 _.plotFlush = true;
                 this.reverse(_.isReversed);
@@ -98,7 +98,7 @@
             get: function() {
                 var _ = this._;
                 return {
-                    samplerate: _.samplerate,
+                    sampleRate: _.sampleRate,
                     channels  : _.channels,
                     buffer    : _.buffer
                 };
@@ -122,9 +122,9 @@
                 return this._.isReversed;
             }
         },
-        samplerate: {
+        sampleRate: {
             get: function() {
-                return this._.samplerate;
+                return this._.sampleRate;
             }
         },
         duration: {
@@ -137,7 +137,7 @@
                 if (typeof value === "number") {
                     var _ = this._;
                     if (0 <= value && value <= _.duration) {
-                        _.phase = (value / 1000) * _.samplerate;
+                        _.phase = (value / 1000) * _.sampleRate;
                         _.currentTime = value;
                     }
                 } else if (value instanceof T.Object) {
@@ -163,7 +163,7 @@
         if (_.buffer.length) {
             setBuffer.call(instance, {
                 buffer    : _.buffer,
-                samplerate: _.samplerate,
+                sampleRate: _.sampleRate,
                 channels  : _.channels
             });
         }
@@ -180,12 +180,12 @@
 
         if (_.buffer.length) {
             if (typeof begin === "number" ){
-                begin = (begin * 0.001 * _.samplerate)|0;
+                begin = (begin * 0.001 * _.sampleRate)|0;
             } else {
                 begin = 0;
             }
             if (typeof end === "number") {
-                end   = (end   * 0.001 * _.samplerate)|0;
+                end   = (end   * 0.001 * _.sampleRate)|0;
             } else {
                 end = _.buffer[0].length;
             }
@@ -201,12 +201,12 @@
                     buffer   : [ fn.pointer(_.buffer[0], begin, end-begin),
                                  fn.pointer(_.buffer[1], begin, end-begin),
                                  fn.pointer(_.buffer[2], begin, end-begin) ],
-                    samplerate: _.samplerate
+                    sampleRate: _.sampleRate
                 });
             } else {
                 setBuffer.call(instance, {
                     buffer: fn.pointer(_.buffer[0], begin, end-begin),
-                    samplerate: _.samplerate
+                    sampleRate: _.sampleRate
                 });
             }
             instance.playbackState = fn.PLAYING_STATE;
@@ -274,7 +274,7 @@
 
             if (_.currentTimeObj) {
                 var pos = _.currentTimeObj.process(tickID).cells[0];
-                var t, sr = _.samplerate * 0.001;
+                var t, sr = _.sampleRate * 0.001;
                 for (i = 0; i < imax; ++i) {
                     t = pos[i];
                     phase = t * sr;

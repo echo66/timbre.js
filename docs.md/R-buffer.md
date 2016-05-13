@@ -46,7 +46,7 @@ ja:  - 逆再生するとき true を返す
 - `isEnded` _(ReadOnly Boolean)_
 en:  - Returns `true` if the playback of the receiver has ended.
 ja:  - 再生終了時に true になる
-- `samplerate` _(ReadOnly Number)_
+- `sampleRate` _(ReadOnly Number)_
 en:  - Sample Rate of **SoundBuffer**
 ja:  - SoundBufferのサンプリングレート
 

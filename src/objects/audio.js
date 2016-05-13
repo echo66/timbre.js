@@ -48,12 +48,12 @@
             var _ = self._;
             if (result) {
                 self.playbackState = fn.PLAYING_STATE;
-                _.samplerate = result.samplerate;
+                _.sampleRate = result.sampleRate;
                 _.channels   = result.channels;
                 _.bufferMix  = null;
                 _.buffer     = result.buffer;
                 _.phase      = 0;
-                _.phaseIncr  = result.samplerate / T.samplerate;
+                _.phaseIncr  = result.sampleRate / T.sampleRate;
                 _.duration   = result.duration * 1000;
                 _.currentTime = 0;
                 if (_.isReversed) {

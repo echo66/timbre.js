@@ -1,8 +1,8 @@
 (function(T) {
     "use strict";
 
-    function Oscillator(samplerate) {
-        this.samplerate = samplerate || 44100;
+    function Oscillator(sampleRate) {
+        this.sampleRate = sampleRate || 44100;
 
         this.wave = null;
         this.step = 1;
@@ -13,7 +13,7 @@
 
         this._x = 0;
         this._lastouts = 0;
-        this._coeff = TABLE_SIZE / this.samplerate;
+        this._coeff = TABLE_SIZE / this.sampleRate;
         this._radtoinc = TABLE_SIZE / (Math.PI * 2);
     }
 
@@ -49,7 +49,7 @@
     };
 
     $.clone = function() {
-        var new_instance = new Oscillator(this.samplerate);
+        var new_instance = new Oscillator(this.sampleRate);
         new_instance.wave      = this.wave;
         new_instance.step      = this.step;
         new_instance.frequency = this.frequency;

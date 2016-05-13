@@ -8,7 +8,7 @@
     }
 
     var silencebuffer = {
-        buffer:DummyBuffer, samplerate:1
+        buffer:DummyBuffer, sampleRate:1
     };
 
     Scissor.silence = function(duration) {
@@ -30,8 +30,8 @@
     function Tape(soundbuffer) {
         this.fragments = [];
         if (soundbuffer) {
-            var samplerate = soundbuffer.samplerate || 44100;
-            var duration   = soundbuffer.buffer[0].length / samplerate;
+            var sampleRate = soundbuffer.sampleRate || 44100;
+            var duration   = soundbuffer.buffer[0].length / sampleRate;
             this.fragments.push(
                 new Fragment(soundbuffer, 0, duration)
             );
@@ -214,14 +214,14 @@
     };
 
     Tape.prototype.getBuffer = function() {
-        var samplerate = 44100;
+        var sampleRate = 44100;
         if (this.fragments.length > 0) {
-            samplerate = this.fragments[0].samplerate;
+            sampleRate = this.fragments[0].sampleRate;
         }
-        var stream = new TapeStream(this, samplerate);
-        var total_samples = (this.duration() * samplerate)|0;
+        var stream = new TapeStream(this, sampleRate);
+        var total_samples = (this.duration() * sampleRate)|0;
         return {
-            samplerate: samplerate,
+            sampleRate: sampleRate,
             buffer    : stream.fetch(total_samples)
         };
     };
@@ -231,7 +231,7 @@
             soundbuffer = silencebuffer;
         }
         this.buffer     = soundbuffer.buffer[0];
-        this.samplerate = soundbuffer.samplerate || 44100;
+        this.sampleRate = soundbuffer.sampleRate || 44100;
         this.start     = start;
         this._duration = duration;
         this.reverse = reverse || false;
@@ -279,7 +279,7 @@
     Fragment.prototype.clone = function() {
         var new_instance = new Fragment();
         new_instance.buffer     = this.buffer;
-        new_instance.samplerate = this.samplerate;
+        new_instance.sampleRate = this.sampleRate;
         new_instance.start     = this.start;
         new_instance._duration = this._duration;
         new_instance.reverse   = this.reverse;
@@ -291,10 +291,10 @@
     Scissor.Fragment = Fragment;
 
 
-    function TapeStream(tape, samplerate) {
+    function TapeStream(tape, sampleRate) {
         this.tape = tape;
         this.fragments  = tape.fragments;
-        this.samplerate = samplerate || 44100;
+        this.sampleRate = sampleRate || 44100;
 
         this.isEnded = false;
         this.buffer  = null;
@@ -333,7 +333,7 @@
             return [cellL, cellR];
         }
 
-        var samplerate  = this.samplerate * 100;
+        var sampleRate  = this.sampleRate * 100;
         var buffer      = this.buffer;
         var bufferIndex = this.bufferIndex;
         var bufferIndexIncr = this.bufferIndexIncr;
@@ -351,9 +351,9 @@
                 if (!fragment || fragmentIndex < fragments.length) {
                     fragment = fragments[fragmentIndex++];
                     buffer   = fragment.buffer;
-                    bufferIndexIncr = fragment.samplerate / samplerate * fragment.pitch;
-                    bufferBeginIndex = fragment.start * fragment.samplerate;
-                    bufferEndIndex   = bufferBeginIndex + fragment.original_duration() * fragment.samplerate;
+                    bufferIndexIncr = fragment.sampleRate / sampleRate * fragment.pitch;
+                    bufferBeginIndex = fragment.start * fragment.sampleRate;
+                    bufferEndIndex   = bufferBeginIndex + fragment.original_duration() * fragment.sampleRate;
 
                     pan = (fragment.pan * 0.01);
                     panL = 1 - pan;

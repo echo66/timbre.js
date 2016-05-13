@@ -1,8 +1,8 @@
 (function(T) {
     "use strict";
 
-    function Biquad(samplerate) {
-        this.samplerate = samplerate;
+    function Biquad(sampleRate) {
+        this.sampleRate = sampleRate;
         this.frequency = 340;
         this.Q         = 1;
         this.gain      = 0;
@@ -63,7 +63,7 @@
 
     var setParams = {
         lowpass: function(cutoff, resonance) {
-            cutoff /= (this.samplerate * 0.5);
+            cutoff /= (this.sampleRate * 0.5);
 
             if (cutoff >= 1) {
                 this.b0 = 1;
@@ -89,7 +89,7 @@
             }
         },
         highpass: function(cutoff, resonance) {
-            cutoff /= (this.samplerate * 0.5);
+            cutoff /= (this.sampleRate * 0.5);
             if (cutoff >= 1) {
                 this.b0 = this.b1 = this.b2 = this.a1 = this.a2 = 0;
             } else if (cutoff <= 0) {
@@ -115,7 +115,7 @@
             }
         },
         bandpass: function(frequency, Q) {
-            frequency /= (this.samplerate * 0.5);
+            frequency /= (this.sampleRate * 0.5);
             if (frequency > 0 && frequency < 1) {
                 if (Q > 0) {
                     var w0 = Math.PI * frequency;
@@ -138,7 +138,7 @@
             }
         },
         lowshelf: function(frequency, _dummy_, dbGain) {
-            frequency /= (this.samplerate * 0.5);
+            frequency /= (this.sampleRate * 0.5);
 
             var A = Math.pow(10.0, dbGain / 40);
 
@@ -167,7 +167,7 @@
             }
         },
         highshelf: function(frequency, _dummy_, dbGain) {
-            frequency /= (this.samplerate * 0.5);
+            frequency /= (this.sampleRate * 0.5);
 
             var A = Math.pow(10.0, dbGain / 40);
 
@@ -196,7 +196,7 @@
             }
         },
         peaking: function(frequency, Q, dbGain) {
-            frequency /= (this.samplerate * 0.5);
+            frequency /= (this.sampleRate * 0.5);
 
             if (frequency > 0 && frequency < 1) {
                 var A = Math.pow(10.0, dbGain / 40);
@@ -221,7 +221,7 @@
             }
         },
         notch: function(frequency, Q) {
-            frequency /= (this.samplerate * 0.5);
+            frequency /= (this.sampleRate * 0.5);
 
             if (frequency > 0 && frequency < 1) {
                 if (Q > 0) {
@@ -244,7 +244,7 @@
             }
         },
         allpass: function(frequency, Q) {
-            frequency /= (this.samplerate * 0.5);
+            frequency /= (this.sampleRate * 0.5);
 
             if (frequency > 0 && frequency < 1) {
                 if (Q > 0) {

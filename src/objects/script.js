@@ -68,7 +68,7 @@
                     if ([256, 512, 1024, 2048, 4096, 8192, 16384].indexOf(value) !== -1) {
                         _.bufferSize = value;
                         _.bufferMask = value - 1;
-                        _.duration = value / _.samplerate;
+                        _.duration = value / _.sampleRate;
                         _.inputBufferL  = new fn.SignalArray(value);
                         _.inputBufferR  = new fn.SignalArray(value);
                         _.outputBufferL = new fn.SignalArray(value);
@@ -93,7 +93,7 @@
     });
 
     function AudioBuffer(self, buffers) {
-        this.samplerate = self._.samplerate;
+        this.sampleRate = self._.sampleRate;
         this.length     = self._.bufferSize;
         this.duration   = self._.duration;
         this.numberOfChannels = buffers.length;

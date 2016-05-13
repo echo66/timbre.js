@@ -44,7 +44,7 @@
                         var allpass = this._.allpass;
                         if (allpass.length < value) {
                             for (var i = allpass.length; i < value; ++i) {
-                                allpass[i] = new Biquad(this._.samplerate);
+                                allpass[i] = new Biquad(this._.sampleRate);
                                 allpass[i].setType("allpass");
                             }
                         }

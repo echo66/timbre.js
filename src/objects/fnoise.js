@@ -46,7 +46,7 @@
 
             var lastValue = _.lastValue;
             var phase     = _.phase;
-            var phaseStep = _.freq.process(tickID).cells[0][0] / _.samplerate;
+            var phaseStep = _.freq.process(tickID).cells[0][0] / _.sampleRate;
             var reg = _.reg;
             var mul = _.mul, add = _.add;
             var i, imax;

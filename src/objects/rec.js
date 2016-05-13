@@ -18,7 +18,7 @@
         _.writeIndex = 0;
         _.writeIndexIncr  = 1;
         _.currentTime     = 0;
-        _.currentTimeIncr = 1000 / _.samplerate;
+        _.currentTimeIncr = 1000 / _.sampleRate;
         _.onended = make_onended(this);
     }
     fn.extend(RecNode);
@@ -34,7 +34,7 @@
             _.currentTime = 0;
 
             _.emit("ended", {
-                buffer:buffer, samplerate:_.samplerate
+                buffer:buffer, sampleRate:_.sampleRate
             });
         };
     };
@@ -55,16 +55,16 @@
                 return this._.timeout;
             }
         },
-        samplerate: {
+        sampleRate: {
             set: function(value) {
                 if (typeof value === "number") {
-                    if (0 < value && value <= this._.samplerate) {
-                        this._.samplerate = value;
+                    if (0 < value && value <= this._.sampleRate) {
+                        this._.sampleRate = value;
                     }
                 }
             },
             get: function() {
-                return this._.samplerate;
+                return this._.sampleRate;
             }
         },
         currentTime: {
@@ -77,12 +77,12 @@
     $.start = function() {
         var _ = this._, len;
         if (_.status === STATUS_WAIT) {
-            len = (_.timeout * 0.01 * _.samplerate)|0;
+            len = (_.timeout * 0.01 * _.sampleRate)|0;
             if (!_.buffer || _.buffer.length < len) {
                 _.buffer = new fn.SignalArray(len);
             }
             _.writeIndex = 0;
-            _.writeIndexIncr = _.samplerate / T.samplerate;
+            _.writeIndexIncr = _.sampleRate / T.sampleRate;
             _.currentTime = 0;
             _.status = STATUS_REC;
             _.emit("start");

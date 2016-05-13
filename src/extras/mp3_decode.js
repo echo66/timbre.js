@@ -13,7 +13,7 @@ if (typeof timbre !== 'undefined' && typeof Mad !== 'undefined' && timbre.envtyp
 				var i, j, x,
 					arrayStream, mp3File, mpegStream,
 					synth, frame,
-					channels, samplerate, length = 0,
+					channels, sampleRate, length = 0,
 					samples = [], currentBuffers, total, frameIndex = 0,
 					mixdown, bufferL, bufferR, isInited;
 				try {
@@ -27,10 +27,10 @@ if (typeof timbre !== 'undefined' && typeof Mad !== 'undefined' && timbre.envtyp
 						// synth will get us our pcm data
 						synth.frame(frame);
 
-						// set channels and samplerate
+						// set channels and sampleRate
 						if (!isInited) {
 							channels = synth.pcm.channels;
-							samplerate = synth.pcm.samplerate;
+							sampleRate = synth.pcm.sampleRate;
 							isInited = true;
 						}
 
@@ -78,10 +78,10 @@ if (typeof timbre !== 'undefined' && typeof Mad !== 'undefined' && timbre.envtyp
 
 				// we've loaded our meta data
 				onloadedmetadata({
-					samplerate: samplerate,
+					sampleRate: sampleRate,
 					channels  : channels,
 					buffer	: [mixdown, bufferL, bufferR],
-					duration  : length / samplerate
+					duration  : length / sampleRate
 				});
 
 				// now populate our full buffers

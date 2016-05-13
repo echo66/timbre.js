@@ -83,10 +83,10 @@
                         _.reservedinterval = value;
                     } else {
                         _.interval = value;
-                        _.samplesIncr = (value * 0.001 * _.samplerate);
+                        _.samplesIncr = (value * 0.001 * _.sampleRate);
                         if (_.samplesIncr < _.buffer.length) {
                             _.samplesIncr = _.buffer.length;
-                            _.interval = _.samplesIncr * 1000 / _.samplerate;
+                            _.interval = _.samplesIncr * 1000 / _.sampleRate;
                         }
                     }
                 }

@@ -15,7 +15,7 @@
         _.cross = T(false);
         _.mix   = 0.33;
 
-        _.delay = new StereoDelay(_.samplerate);
+        _.delay = new StereoDelay(_.sampleRate);
     }
     fn.extend(DelayNode);
 

@@ -95,7 +95,7 @@
             }
 
             var channels   = data[22] + (data[23]<<8);
-            var samplerate = data[24] + (data[25]<<8) + (data[26]<<16) + (data[27]<<24);
+            var sampleRate = data[24] + (data[25]<<8) + (data[26]<<16) + (data[27]<<24);
             var bitSize    = data[34] + (data[35]<<8);
 
             var i = 36;
@@ -111,7 +111,7 @@
             i += 4;
 
             var l2 = data[i] + (data[i+1]<<8) + (data[i+2]<<16) + (data[i+3]<<24);
-            var duration = ((l2 / channels) >> 1) / samplerate;
+            var duration = ((l2 / channels) >> 1) / sampleRate;
             i += 4;
 
             if (l2 > data.length - i) {
@@ -119,14 +119,14 @@
             }
 
             var mixdown, bufferL, bufferR;
-            mixdown = new Float32Array((duration * samplerate)|0);
+            mixdown = new Float32Array((duration * sampleRate)|0);
             if (channels === 2) {
                 bufferL = new Float32Array(mixdown.length);
                 bufferR = new Float32Array(mixdown.length);
             }
 
             onloadedmetadata({
-                samplerate: samplerate,
+                sampleRate: sampleRate,
                 channels  : channels,
                 buffer    : [mixdown, bufferL, bufferR],
                 duration  : duration
@@ -173,7 +173,7 @@
         if (typeof T.fn._audioContext !== "undefined") {
             var ctx = T.fn._audioContext;
             var _decode = function(data, onloadedmetadata, onloadeddata) {
-                var samplerate, channels, bufferL, bufferR, duration;
+                var sampleRate, channels, bufferL, bufferR, duration;
 
                 if (typeof data === "string") {
                     return onloadeddata(false);
@@ -186,7 +186,7 @@
                     return onloadedmetadata(false);
                 }
 
-                samplerate = ctx.sampleRate;
+                sampleRate = ctx.sampleRate;
                 channels   = buffer.numberOfChannels;
                 if (channels === 2) {
                     bufferL = buffer.getChannelData(0);
@@ -194,7 +194,7 @@
                 } else {
                     bufferL = bufferR = buffer.getChannelData(0);
                 }
-                duration = bufferL.length / samplerate;
+                duration = bufferL.length / sampleRate;
 
                 var mixdown = new Float32Array(bufferL);
                 for (var i = 0, imax = mixdown.length; i < imax; ++i) {
@@ -202,7 +202,7 @@
                 }
 
                 onloadedmetadata({
-                    samplerate: samplerate,
+                    sampleRate: sampleRate,
                     channels  : channels,
                     buffer    : [mixdown, bufferL, bufferR],
                     duration  : duration
@@ -235,19 +235,19 @@
     Decoder.moz_decode = (function() {
         if (typeof Audio === "function" && typeof new Audio().mozSetup === "function") {
             return function(src, onloadedmetadata, onloadeddata) {
-                var samplerate, channels, mixdown, bufferL, bufferR, duration;
+                var sampleRate, channels, mixdown, bufferL, bufferR, duration;
                 var writeIndex = 0;
 
                 var audio = new Audio(src);
                 audio.volume = 0.0;
                 audio.addEventListener("loadedmetadata", function() {
-                    samplerate = audio.mozSampleRate;
+                    sampleRate = audio.mozsampleRate;
                     channels   = audio.mozChannels;
                     duration   = audio.duration;
-                    mixdown = new Float32Array((audio.duration * samplerate)|0);
+                    mixdown = new Float32Array((audio.duration * sampleRate)|0);
                     if (channels === 2) {
-                        bufferL = new Float32Array((audio.duration * samplerate)|0);
-                        bufferR = new Float32Array((audio.duration * samplerate)|0);
+                        bufferL = new Float32Array((audio.duration * sampleRate)|0);
+                        bufferR = new Float32Array((audio.duration * sampleRate)|0);
                     }
                     if (channels === 2) {
                         audio.addEventListener("MozAudioAvailable", function(e) {
@@ -271,7 +271,7 @@
                     audio.play();
                     setTimeout(function() {
                         onloadedmetadata({
-                            samplerate: samplerate,
+                            sampleRate: sampleRate,
                             channels  : channels,
                             buffer    : [mixdown, bufferL, bufferR],
                             duration  : duration

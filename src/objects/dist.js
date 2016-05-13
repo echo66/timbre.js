@@ -140,7 +140,7 @@
     };
 
     var lowpass_params = function(_) {
-        var w0 = 2 * Math.PI * _.cutoff / _.samplerate;
+        var w0 = 2 * Math.PI * _.cutoff / _.sampleRate;
         var cos = Math.cos(w0);
         var sin = Math.sin(w0);
         var alpha = sin / (2 * _.Q);

@@ -125,9 +125,9 @@
                 return _sys.impl.env;
             }
         },
-        samplerate: {
+        sampleRate: {
             get: function() {
-                return _sys.samplerate;
+                return _sys.sampleRate;
             }
         },
         channels: {
@@ -175,11 +175,6 @@
             },
             get: function() {
                 return _bpm;
-            }
-        }, 
-        sys: {
-            get: function() {
-                return _sys;
             }
         }
     });
@@ -265,7 +260,7 @@
                 return 60 / getbpm(str) * (m[1] / 480) * 1000;
             }
             if ((m = /^(\d+)samples(?:\/(\d+)Hz)?$/i.exec(str))) {
-                return m[1] * 1000 / (m[2] || timbre.samplerate);
+                return m[1] * 1000 / (m[2] || timbre.sampleRate);
             }
             return 0;
         };
@@ -1144,7 +1139,7 @@
             this._.dac = null;
             this._.bypassed = false;
             this._.meta = {};
-            this._.samplerate = _sys.samplerate;
+            this._.sampleRate = _sys.sampleRate;
             this._.cellsize   = _sys.cellsize;
             this._.buddies    = [];
         }
@@ -1920,7 +1915,7 @@
             this.impl = null;
             this.amp  = 0.8;
             this.status = FINISHED_STATE;
-            this.samplerate = 44100;
+            this.sampleRate = 44100;
             this.channels   = 2;
             this.cellsize   = 64;
             this.streammsec = 20;
@@ -1938,7 +1933,7 @@
 
             this.events = null;
 
-            fn.currentTimeIncr = this.cellsize / this.samplerate;
+            fn.currentTimeIncr = this.cellsize * 1000 / this.sampleRate;
             fn.emptycell = new fn.SignalArray(this.cellsize);
 
             this.reset(true);
@@ -1958,7 +1953,7 @@
                 var player = new Klass(this, opts);
                 this.impl = player;
                 if (this.impl.defaultSamplerate) {
-                    this.samplerate = this.impl.defaultSamplerate;
+                    this.sampleRate = this.impl.defaultSamplerate;
                 }
             }
             return this;
@@ -1966,11 +1961,11 @@
 
         $.setup = function(params) {
             if (typeof params === "object") {
-                if (ACCEPT_SAMPLERATES.indexOf(params.samplerate) !== -1) {
-                    if (params.samplerate <= this.impl.maxSamplerate) {
-                        this.samplerate = params.samplerate;
+                if (ACCEPT_SAMPLERATES.indexOf(params.sampleRate) !== -1) {
+                    if (params.sampleRate <= this.impl.maxSamplerate) {
+                        this.sampleRate = params.sampleRate;
                     } else {
-                        this.samplerate = this.impl.maxSamplerate;
+                        this.sampleRate = this.impl.maxSamplerate;
                     }
                 }
                 if (ACCEPT_CELLSIZES.indexOf(params.cellsize) !== -1) {
@@ -1985,12 +1980,12 @@
                     }
                 }
             }
-            fn.currentTimeIncr = this.cellsize / this.samplerate;
+            fn.currentTimeIncr = this.cellsize * 1000 / this.sampleRate;
             fn.emptycell = new fn.SignalArray(this.cellsize);
             return this;
         };
 
-        $.getAdjustSamples = function(samplerate) {
+        $.getAdjustSamples = function(sampleRate) {
             return 2048;
         };
 
@@ -2087,7 +2082,7 @@
                     }
                 }
 
-                this.currentTime += currentTimeIncr;
+                this.currentTime = tickID * currentTimeIncr;
 
                 nextTicks = this.nextTicks.splice(0);
                 for (j = 0, jmax = nextTicks.length; j < jmax; ++j) {
@@ -2200,8 +2195,8 @@
 
             this.deferred.sub = inlet_dfd;
 
-            this.savedSamplerate = this.samplerate;
-            this.samplerate  = opts.samplerate  || this.samplerate;
+            this.savedSamplerate = this.sampleRate;
+            this.sampleRate  = opts.sampleRate  || this.sampleRate;
             this.recDuration = opts.recDuration || Infinity;
             this.maxDuration = opts.maxDuration || 10 * 60 * 1000;
             this.recCh = opts.ch || 1;
@@ -2228,14 +2223,14 @@
             this.reset();
 
             var recBuffers = this.recBuffers;
-            var samplerate = this.samplerate;
+            var sampleRate = this.sampleRate;
             var streamsize = this.streamsize;
             var bufferLength;
 
-            this.samplerate = this.savedSamplerate;
+            this.sampleRate = this.savedSamplerate;
 
             if (this.recDuration !== Infinity) {
-                bufferLength = (this.recDuration * samplerate * 0.001)|0;
+                bufferLength = (this.recDuration * sampleRate * 0.001)|0;
             } else {
                 bufferLength = (recBuffers.length >> (this.recCh-1)) * streamsize;
             }
@@ -2266,7 +2261,7 @@
                 }
 
                 result = {
-                    samplerate: samplerate,
+                    sampleRate: sampleRate,
                     channels  : 2,
                     buffer: [mixed, L, R]
                 };
@@ -2283,7 +2278,7 @@
                     }
                 }
                 result = {
-                    samplerate: samplerate,
+                    sampleRate: sampleRate,
                     channels  : 1,
                     buffer: [buffer]
                 };
@@ -2351,14 +2346,14 @@
                 var sys_streamsize = sys.streamsize;
                 var x, dx;
 
-                if (sys.samplerate === context.sampleRate) {
+                if (sys.sampleRate === context.sampleRate) {
                     onaudioprocess = function(e) {
                         var outs = e.outputBuffer;
                         sys.process();
                         outs.getChannelData(0).set(sys.strmL);
                         outs.getChannelData(1).set(sys.strmR);
                     };
-                } else if (sys.samplerate * 2 === context.sampleRate) {
+                } else if (sys.sampleRate * 2 === context.sampleRate) {
                     onaudioprocess = function(e) {
                         var inL = sys.strmL;
                         var inR = sys.strmR;
@@ -2376,7 +2371,7 @@
                     };
                 } else {
                     x  = sys_streamsize;
-                    dx = sys.samplerate / context.sampleRate;
+                    dx = sys.sampleRate / context.sampleRate;
                     onaudioprocess = function(e) {
                         var inL = sys.strmL;
                         var inR = sys.strmR;
@@ -2497,7 +2492,7 @@
                     var interleaved = new Array(sys.streamsize * sys.channels);
                     var streammsec  = sys.streammsec;
                     var written = 0;
-                    var writtenIncr = sys.streamsize / sys.samplerate * 1000;
+                    var writtenIncr = sys.streamsize / sys.sampleRate * 1000;
                     var start = Date.now();
 
                     onaudioprocess = function() {
@@ -2518,7 +2513,7 @@
                     };
 
                     if (swf.setup) {
-                        swf.setup(sys.channels, sys.samplerate);
+                        swf.setup(sys.channels, sys.sampleRate);
                         timerId = setInterval(onaudioprocess, streammsec);
                     } else {
                         console.warn("Cannot find " + src);

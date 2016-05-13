@@ -12,7 +12,7 @@
         this._._damp = T(0.5);
         this._._mix = T(0.33);
 
-        this._.reverb = new Reverb(this._.samplerate, this._.cellsize);
+        this._.reverb = new Reverb(this._.sampleRate, this._.cellsize);
     }
     fn.extend(ReverbNode);
 

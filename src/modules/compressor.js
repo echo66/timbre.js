@@ -6,8 +6,8 @@
     var DefaultPreDelayFrames = 256;
     var kSpacingDb = 5;
 
-    function Compressor(samplerate, channels) {
-        this.samplerate = samplerate;
+    function Compressor(sampleRate, channels) {
+        this.sampleRate = sampleRate;
         this.channels = channels;
 
         this.lastPreDelayFrames = 0;
@@ -48,7 +48,7 @@
         this.preDelayReadIndex = 0;
         this.preDelayWriteIndex = DefaultPreDelayFrames;
         this.maxAttackCompressionDiffDb = -1;
-        this.meteringReleaseK = 1 - Math.exp(-1 / (this.samplerate * 0.325));
+        this.meteringReleaseK = 1 - Math.exp(-1 / (this.sampleRate * 0.325));
 
         this.setAttackTime(this.attackTime);
         this.setReleaseTime(this.releaseTime);
@@ -59,7 +59,7 @@
     var $ = Compressor.prototype;
 
     $.clone = function() {
-        var new_instance = new Compressor(this.samplerate, this.channels);
+        var new_instance = new Compressor(this.sampleRate, this.channels);
         new_instance.setAttackTime(this.attackTime);
         new_instance.setReleaseTime(this.releaseTime);
         new_instance.setPreDelayTime(this.preDelayTime);
@@ -69,15 +69,15 @@
 
     $.setAttackTime = function(value) {
         this.attackTime = Math.max(0.001, value);
-        this._attackFrames = this.attackTime * this.samplerate;
+        this._attackFrames = this.attackTime * this.sampleRate;
     };
 
     $.setReleaseTime = function(value) {
         this.releaseTime = Math.max(0.001, value);
-        var releaseFrames = this.releaseTime * this.samplerate;
+        var releaseFrames = this.releaseTime * this.sampleRate;
 
         var satReleaseTime = 0.0025;
-        this._satReleaseFrames = satReleaseTime * this.samplerate;
+        this._satReleaseFrames = satReleaseTime * this.sampleRate;
 
         var y1 = releaseFrames * this.releaseZone1;
         var y2 = releaseFrames * this.releaseZone2;
@@ -93,7 +93,7 @@
 
     $.setPreDelayTime = function(preDelayTime) {
         this.preDelayTime = preDelayTime;
-        var preDelayFrames = preDelayTime * this.samplerate;
+        var preDelayFrames = preDelayTime * this.sampleRate;
         if (preDelayFrames > MaxPreDelayFrames - 1) {
             preDelayFrames = MaxPreDelayFrames - 1;
         }

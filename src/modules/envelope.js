@@ -1,8 +1,8 @@
 (function(T) {
     "use strict";
 
-    function Envelope(samplerate) {
-        this.samplerate = samplerate || 44100;
+    function Envelope(sampleRate) {
+        this.sampleRate = sampleRate || 44100;
         this.value  = ZERO;
         this.status = StatusWait;
         this.curve  = "linear";
@@ -11,7 +11,7 @@
         this.loopNode    = null;
         this.emit = null;
 
-        this._envValue = new EnvelopeValue(samplerate);
+        this._envValue = new EnvelopeValue(sampleRate);
 
         this._table  = [];
         this._initValue  = ZERO;
@@ -51,7 +51,7 @@
     var $ = Envelope.prototype;
 
     $.clone = function() {
-        var new_instance = new Envelope(this.samplerate);
+        var new_instance = new Envelope(this.sampleRate);
         new_instance._table = this._table;
         new_instance._initValue = this._initValue;
         new_instance.setCurve(this.curve);
@@ -245,8 +245,8 @@
     };
 
 
-    function EnvelopeValue(samplerate) {
-        this.samplerate = samplerate;
+    function EnvelopeValue(sampleRate) {
+        this.sampleRate = sampleRate;
         this.value = ZERO;
         this.step  = 1;
 
@@ -265,7 +265,7 @@
         var value = this.value;
         var grow, w, a1, a2, b1, y1, y2;
 
-        var counter = ((time * 0.001 * this.samplerate) / n)|0;
+        var counter = ((time * 0.001 * this.sampleRate) / n)|0;
         if (counter < 1) {
             counter   = 1;
             curveType = CurveTypeSet;

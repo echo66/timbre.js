@@ -21,7 +21,7 @@
         _.attack = 3;
         _.release = 25;
 
-        _.comp = new Compressor(_.samplerate);
+        _.comp = new Compressor(_.sampleRate);
         _.comp.dbPostGain = _.postGain;
         _.comp.setAttackTime(_.attack * 0.001);
         _.comp.setReleaseTime(_.release * 0.001);

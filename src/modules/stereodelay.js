@@ -1,10 +1,10 @@
 (function(T) {
     "use strict";
 
-    function StereoDelay(samplerate) {
-        this.samplerate = samplerate;
+    function StereoDelay(sampleRate) {
+        this.sampleRate = sampleRate;
 
-        var bits = Math.ceil(Math.log(samplerate * 1.5) * Math.LOG2E);
+        var bits = Math.ceil(Math.log(sampleRate * 1.5) * Math.LOG2E);
 
         this.buffersize = 1 << bits;
         this.buffermask = this.buffersize - 1;
@@ -30,7 +30,7 @@
     $.setParams = function(delaytime, feedback, cross ,mix) {
         if (this.delaytime !== delaytime) {
             this.delaytime = delaytime;
-            var offset = (delaytime * 0.001 * this.samplerate)|0;
+            var offset = (delaytime * 0.001 * this.sampleRate)|0;
             if (offset > this.buffermask) {
                 offset = this.buffermask;
             }

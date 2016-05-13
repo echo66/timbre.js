@@ -14,7 +14,7 @@
         this._._feedback = T(0.2);
         this._._mix = T(0.3);
 
-        var chorus = new Chorus(this._.samplerate);
+        var chorus = new Chorus(this._.sampleRate);
         chorus.setDelayTime(20);
         chorus.setRate(4);
         chorus.depth = 20;
@@ -87,7 +87,7 @@
 
             _.chorus.setDelayTime(Math.min(80, Math.max(0.5, _._delay.process(tickID).cells[0][0])));
             _.chorus.setRate(Math.max(0, _._rate.process(tickID).cells[0][0]));
-            _.chorus.depth = Math.min(100, Math.max(0, _._depth.process(tickID).cells[0][0])) * this._.samplerate / 44100;
+            _.chorus.depth = Math.min(100, Math.max(0, _._depth.process(tickID).cells[0][0])) * this._.sampleRate / 44100;
             _.chorus.feedback = Math.min(1, Math.max(-1, _._feedback.process(tickID).cells[0][0])) * 0.99996;
             _.chorus.wet = _._mix.process(tickID).cells[0][0];
 

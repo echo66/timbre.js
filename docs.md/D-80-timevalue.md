@@ -21,7 +21,7 @@ ja:  - 数値に続けて `min` を記述すると分を表します。例: _"10
 en:  - Hours:minutes:seconds are specified with numbers separated by colons, such as _"00:03:25"_, which means zero hours, 3 minutes, and 25 seconds. An optional millisecond value can be added after a period, for example: _"00:03:25.230"_. Hours/minutes/seconds can also specified by a list of three or four numbers followed by `hh:mm:ss`.
 ja:  - コロンで区切った数値 (例えば_"00:03:25"_) は 0時間, 3分, 25秒を表します。オプションとしてピリオドに続けてミリ秒を指定できます。例: _"00:03:25.230"_
 - **Samples** 
-en:  - Samples can be specified by a single number followed by `samples`, such as _"1000samples"_. An optional samplerate value can be added with 'hz' keyword, for example: _"100samples/44100hz"_.
+en:  - Samples can be specified by a single number followed by `samples`, such as _"1000samples"_. An optional sampleRate value can be added with 'hz' keyword, for example: _"100samples/44100hz"_.
 ja:  - 数値に続けて `samples` を記述するとサンプル数を表します。例: _"1000samples"_。オプションとして `hz` キーワードとともにサンプルレートを指定できます。例: _"100samples/44100hz"_
 - **Note Length**
 en:  - Note length can be specified by a single number followed by preceding `L`, such as _"L4"_, which means quarter note. An optional bpm value can be added with 'BPM' keyword, for example: _"BPM180 L16"_. If the bpm is omitted timevalue() will use the value of the `timbre.bpm`.

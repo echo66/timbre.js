@@ -99,7 +99,7 @@
             time = timevalue(time);
         }
         if (typeof time === "number" && time > 0) {
-            this._.count += (this._.samplerate * time * 0.001)|0;
+            this._.count += (this._.sampleRate * time * 0.001)|0;
         }
         return this;
     };
