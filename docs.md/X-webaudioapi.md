@@ -60,7 +60,7 @@ timbre.once("reset", function() {
 });
 ```
 
-<script src="/timbre.js/src/extras/webaudioapi.js"></script>
+<script src="../src/extras/webaudioapi.js"></script>
 
 ## Examples ##
 Web Audio API -> timbre.js -> Web Audio API

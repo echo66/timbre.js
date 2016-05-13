@@ -176,6 +176,11 @@
             get: function() {
                 return _bpm;
             }
+        }, 
+        sys: {
+            get: function() {
+                return _sys;
+            }
         }
     });
 
@@ -1933,7 +1938,7 @@
 
             this.events = null;
 
-            fn.currentTimeIncr = this.cellsize * 1000 / this.samplerate;
+            fn.currentTimeIncr = this.cellsize / this.samplerate;
             fn.emptycell = new fn.SignalArray(this.cellsize);
 
             this.reset(true);
@@ -1980,7 +1985,7 @@
                     }
                 }
             }
-            fn.currentTimeIncr = this.cellsize * 1000 / this.samplerate;
+            fn.currentTimeIncr = this.cellsize / this.samplerate;
             fn.emptycell = new fn.SignalArray(this.cellsize);
             return this;
         };

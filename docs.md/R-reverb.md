@@ -16,11 +16,11 @@ var audio = T("audio", {loop:true}).load(src, function(res) {
 ```
 
 ## Properties ##
-- `room` _(Number)_
+- `room` _(T-Object or Number)_
   - room size (default: 0.5)
-- `damp` _(Number)_
+- `damp` _(T-Object or Number)_
   - reverb HF damp (default: 0.5)
-- `mix` _(Number)_
+- `mix` _(T-Object or Number)_
   - dry/wet balance (default: 0.33)
 
 _Valid parameter range from 0 to 1. Values outside this range are clipped by the object._

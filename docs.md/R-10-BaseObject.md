@@ -16,7 +16,8 @@ en:  - adjust the output _(lastout\[i\] = out\[i\] * mul + add)_
 ja:  - 出力値を調整します。最終出力値は 出力値 * mul + add になります。
 
 - `buddies` _(list of TimbreObject)_
-  - _todo_
+en:  - A list stating **other** TimbreObject instances that will start and pause synchronously with **this** TimbreObject.
+ja:  - _todo_
 
 - `isAr` _(ReadOnly Boolean)_
 en:  - returns `true` if receiver is an **audio rate**

@@ -28,5 +28,8 @@
     "mocha": "*",
     "pug": "*", 
     "marked": "*"
+  },
+  "scripts": {
+    "test": "mocha"
   }
 }
