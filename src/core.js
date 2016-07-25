@@ -27,6 +27,21 @@
     var _envmobile = _envtype === "browser" && /(iPhone|iPad|iPod|Android)/i.test(navigator.userAgent);
     var _f64mode = false;
     var _bpm = 120;
+    var _masterTimeContext = {
+        tickID: 0, 
+        get currentTime() {
+            return this.tickID * this.currentTimeIncr;
+        }, 
+        currentTimeIncr: undefined, 
+        reset: function() {
+            this.tickID = 0;
+        }, 
+        tick : function() { 
+            this.tickID++; 
+        }
+    };
+    var _timeContexts = new Set();
+    _timeContexts.add(_masterTimeContext);
 
     var T = function() {
         var args = slice.call(arguments), key = args[0], t, m;
@@ -142,9 +157,9 @@
         },
         currentTime: {
             get: function() {
-                return _sys.currentTime;
+                return _masterTimeContext.currentTime;
             }
-        },
+        }, 
         isPlaying: {
             get: function() {
                 return _sys.status === PLAYING_STATE;
@@ -175,6 +190,26 @@
             },
             get: function() {
                 return _bpm;
+            }
+        }, 
+        sys: {
+            get: function() {
+                return _sys;
+            }
+        }, 
+        constructors: {
+            get: function() {
+                return _constructors;
+            }
+        }, 
+        factories: {
+            get: function() {
+                return _factories;
+            }
+        },
+        timeContext: {
+            get: function() {
+                return _masterTimeContext;
             }
         }
     });
@@ -269,6 +304,7 @@
     var fn = timbre.fn = {
         SignalArray: Float32Array,
         currentTimeIncr: 0,
+        timeContexts: _timeContexts, 
         emptycell: null,
         FINISHED_STATE: FINISHED_STATE,
         PLAYING_STATE: PLAYING_STATE,
@@ -396,8 +432,8 @@
     fn.timer = (function() {
         var make_onstart = function(self) {
             return function() {
-                if (_sys.timers.indexOf(self) === -1) {
-                    _sys.timers.push(self);
+                if (!_sys.timers.has(self)) {
+                    _sys.timers.add(self);
                     _sys.events.emit("addObject");
                     self._.emit("start");
                     fn.buddies_start(self);
@@ -406,9 +442,8 @@
         };
         var make_onstop = function(self) {
             return function() {
-                var i = _sys.timers.indexOf(self);
-                if (i !== -1) {
-                    _sys.timers.splice(i, 1);
+                if (_sys.timers.has(self)) {
+                    _sys.timers.delete(self);
                     self._.emit("stop");
                     _sys.events.emit("removeObject");
                     fn.buddies_stop(self);
@@ -434,8 +469,8 @@
     fn.listener = (function() {
         var make_onlisten = function(self) {
             return function() {
-                if (_sys.listeners.indexOf(self) === -1) {
-                    _sys.listeners.push(self);
+                if (!_sys.listeners.has(self)) {
+                    _sys.listeners.add(self);
                     _sys.events.emit("addObject");
                     self._.emit("listen");
                     fn.buddies_start(self);
@@ -444,9 +479,8 @@
         };
         var make_onunlisten = function(self) {
             return function() {
-                var i = _sys.listeners.indexOf(self);
-                if (i !== -1) {
-                    _sys.listeners.splice(i, 1);
+                if (_sys.listeners.has(self)) {
+                    _sys.listeners.delete(self);
                     self._.emit("unlisten");
                     _sys.events.emit("removeObject");
                     fn.buddies_stop(self);
@@ -1142,6 +1176,8 @@
             this._.sampleRate = _sys.sampleRate;
             this._.cellsize   = _sys.cellsize;
             this._.buddies    = [];
+
+            this._.timeContext = _masterTimeContext;
         }
         TimbreObject.DSP      = 1;
         TimbreObject.TIMER    = 2;
@@ -1203,6 +1239,19 @@
                 },
                 get: function() {
                     return this._.buddies;
+                }
+            }, 
+            currentTime: {
+                get: function() {
+                    return this.timeContext.currentTime;
+                }
+            }, 
+            timeContext: {
+                get: function() {
+                    return this._.timeContext;
+                }, 
+                set: function(value) {
+                    this._.timeContext = value;
                 }
             }
         });
@@ -1861,8 +1910,8 @@
 
         var make_onplay = function(self) {
             return function() {
-                if (_sys.inlets.indexOf(self) === -1) {
-                    _sys.inlets.push(self);
+                if (!_sys.inlets.has(self)) {
+                    _sys.inlets.add(self);
                     _sys.events.emit("addObject");
                     self.playbackState = PLAYING_STATE;
                     self._.emit("play");
@@ -1872,9 +1921,8 @@
 
         var make_onpause = function(self) {
             return function() {
-                var i = _sys.inlets.indexOf(self);
-                if (i !== -1) {
-                    _sys.inlets.splice(i, 1);
+                if (_sys.inlets.has(self)) {
+                    _sys.inlets.delete(self);
                     self.playbackState = FINISHED_STATE;
                     self._.emit("pause");
                     _sys.events.emit("removeObject");
@@ -1886,7 +1934,7 @@
 
         $.play = function() {
             _sys.nextTick(this._.onplay);
-            return (_sys.inlets.indexOf(this) === -1);
+            return (!_sys.inlets.has(this));
         };
 
         $.pause = function() {
@@ -1921,10 +1969,10 @@
             this.streammsec = 20;
             this.streamsize = 0;
             this.currentTime = 0;
-            this.nextTicks = [];
-            this.inlets    = [];
-            this.timers    = [];
-            this.listeners = [];
+            this.nextTicks = new Set();
+            this.inlets    = new Set();
+            this.timers    = new Set();
+            this.listeners = new Set();
 
             this.deferred = null;
             this.recStart   = 0;
@@ -1933,7 +1981,7 @@
 
             this.events = null;
 
-            fn.currentTimeIncr = this.cellsize * 1000 / this.sampleRate;
+            fn.currentTimeIncr = _masterTimeContext.currentTimeIncr = this.cellsize * 1000 / this.sampleRate;
             fn.emptycell = new fn.SignalArray(this.cellsize);
 
             this.reset(true);
@@ -2020,22 +2068,26 @@
                     }
                 }).on("removeObject", function() {
                     if (this.status === PLAYING_STATE) {
-                        if (this.inlets.length + this.timers.length + this.listeners.length === 0) {
+                        if (this.inlets.size + this.timers.size + this.listeners.size === 0) {
                             this.pause();
                         }
                     }
                 });
             }
+            _timeContexts.forEach(function(timeCtx) {
+                timeCtx.reset();
+            });
             this.currentTime = 0;
-            this.nextTicks = [];
-            this.inlets    = [];
-            this.timers    = [];
-            this.listeners = [];
+            this.nextTicks = new Set();
+            this.inlets    = new Set();
+            this.timers    = new Set();
+            this.listeners = new Set();
             return this;
         };
 
         $.process = function() {
-            var tickID = this.tickID;
+            // var tickID = this.tickID;
+            var tickID = _masterTimeContext.tickID;
             var strmL = this.strmL, strmR = this.strmR;
             var amp = this.amp;
             var x, tmpL, tmpR;
@@ -2047,47 +2099,80 @@
             var timers    = this.timers;
             var inlets    = this.inlets;
             var listeners = this.listeners;
-            var currentTimeIncr = fn.currentTimeIncr;
+            // var currentTimeIncr = fn.currentTimeIncr;
 
             for (i = 0; i < imax; ++i) {
                 strmL[i] = strmR[i] = 0;
             }
 
             while (n--) {
-                ++tickID;
+                // ++tickID;
 
-                for (j = 0, jmax = timers.length; j < jmax; ++j) {
-                    if (timers[j].playbackState & 1) {
-                        timers[j].process(tickID);
+                // for (j = 0, jmax = timers.length; j < jmax; ++j) {
+                //     if (timers[j].playbackState & 1) {
+                //         timers[j].process(tickID);
+                //     }
+                // }
+                timers.forEach((timer) => {
+                    if (timer.playbackState & 1) {
+                        timer.process(tickID);
                     }
-                }
+                });
 
-                for (j = 0, jmax = inlets.length; j < jmax; ++j) {
-                    x = inlets[j];
-                    x.process(tickID);
-                    if (x.playbackState & 1) {
-                        tmpL = x.cells[1];
-                        tmpR = x.cells[2];
+                // for (j = 0, jmax = inlets.length; j < jmax; ++j) {
+                //     x = inlets[j];
+                //     x.process(tickID);
+                //     if (x.playbackState & 1) {
+                //         tmpL = x.cells[1];
+                //         tmpR = x.cells[2];
+                //         for (k = 0, i = saved_i; k < kmax; ++k, ++i) {
+                //             strmL[i] += tmpL[k];
+                //             strmR[i] += tmpR[k];
+                //         }
+                //     }
+                // }
+                inlets.forEach((inlet) => {
+                    inlet.process(tickID);
+                    if (inlet.playbackState & 1) {
+                        tmpL = inlet.cells[1];
+                        tmpR = inlet.cells[2];
                         for (k = 0, i = saved_i; k < kmax; ++k, ++i) {
                             strmL[i] += tmpL[k];
                             strmR[i] += tmpR[k];
                         }
                     }
-                }
+                });
                 saved_i += kmax;
 
-                for (j = 0, jmax = listeners.length; j < jmax; ++j) {
-                    if (listeners[j].playbackState & 1) {
-                        listeners[j].process(tickID);
+                // for (j = 0, jmax = listeners.length; j < jmax; ++j) {
+                //     if (listeners[j].playbackState & 1) {
+                //         listeners[j].process(tickID);
+                //     }
+                // }
+                listeners.forEach((listener) => {
+                    if (listener.playbackState & 1) {
+                        listener.process(tickID);
                     }
-                }
+                });
 
-                this.currentTime = tickID * currentTimeIncr;
+                // this.currentTime = tickID * currentTimeIncr;
+                // for (j = 0, jmax = _timeContexts.length; j < jmax; j++) {
+                //     _timeContexts[j].tick();
+                // }
+                _timeContexts.forEach((timeContext) => {
+                    timeContext.tick();
+                });
+                ++tickID;
 
-                nextTicks = this.nextTicks.splice(0);
-                for (j = 0, jmax = nextTicks.length; j < jmax; ++j) {
-                    nextTicks[j]();
-                }
+                // nextTicks = this.nextTicks.splice(0);
+                // for (j = 0, jmax = nextTicks.length; j < jmax; ++j) {
+                //     nextTicks[j]();
+                // }
+                this.nextTicks.forEach((nextTick) => {
+                    nextTick();
+                });
+
+                this.nextTicks.clear();
             }
 
             for (i = 0; i < imax; ++i) {
@@ -2107,7 +2192,7 @@
                 strmR[i] = x;
             }
 
-            this.tickID = tickID;
+            // this.tickID = tickID;
 
             var currentTime = this.currentTime;
 
@@ -2142,7 +2227,7 @@
             if (this.status === FINISHED_STATE) {
                 func();
             } else {
-                this.nextTicks.push(func);
+                this.nextTicks.add(func);
             }
         };
 
@@ -2209,7 +2294,7 @@
             this.strmL = new fn.SignalArray(this.streamsize);
             this.strmR = new fn.SignalArray(this.streamsize);
 
-            this.inlets.push(rec_inlet);
+            this.inlets.add(rec_inlet);
 
             func(outlet);
 
@@ -2433,6 +2518,8 @@
 
     _sys = new SoundSystem().bind(ImplClass);
 
+    timbre.fn.sys = _sys;
+
     var exports = timbre;
 
     if (_envtype === "node" || typeof module !== "undefined" && module.exports) {
@@ -2489,7 +2576,7 @@
 
                 this.play = function() {
                     var onaudioprocess;
-                    var interleaved = new Array(sys.streamsize * sys.channels);
+                    var interleaved = new Float32Array(sys.streamsize * sys.channels);
                     var streammsec  = sys.streammsec;
                     var written = 0;
                     var writtenIncr = sys.streamsize / sys.sampleRate * 1000;

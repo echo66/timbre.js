@@ -28,6 +28,7 @@
         if (_.numberOfInputs === 0) {
             this.numberOfInputs = 1;
         }
+
         if (_.numberOfOutputs === 0) {
             this.numberOfOutputs = 1;
         }
@@ -69,10 +70,18 @@
                         _.bufferSize = value;
                         _.bufferMask = value - 1;
                         _.duration = value / _.sampleRate;
-                        _.inputBufferL  = new fn.SignalArray(value);
-                        _.inputBufferR  = new fn.SignalArray(value);
-                        _.outputBufferL = new fn.SignalArray(value);
-                        _.outputBufferR = new fn.SignalArray(value);
+
+                        _.inputBuffers = new Array(2);
+                        _.inputBuffers[0] = _.inputBufferL = new fn.SignalArray(value);
+                        _.inputBuffers[1] = _.inputBufferR = _.inputBufferL;
+                        if (_.numberOfInputs > 1) 
+                            _.inputBuffers[1] = _.inputBufferR  = new fn.SignalArray(value);
+
+                        _.outputBuffers = new Array(2);
+                        _.outputBuffers[0] = _.outputBufferL = new fn.SignalArray(value);
+                        _.outputBuffers[1] = _.outputBufferR = _.outputBufferL;
+                        if (_.numberOfOutputs > 1) 
+                            _.outputBuffers[1] = _.outputBufferR  = new fn.SignalArray(value);
                     }
                 }
             },
@@ -105,17 +114,9 @@
     function AudioProcessingEvent(self) {
         var _ = self._;
         this.node = self;
-        this.playbackTime = T.currentTime;
-        if (_.numberOfInputs === 2) {
-            this.inputBuffer  = new AudioBuffer(self, [_.inputBufferL, _.inputBufferR]);
-        } else {
-            this.inputBuffer  = new AudioBuffer(self, [_.inputBufferL]);
-        }
-        if (_.numberOfOutputs === 2) {
-            this.outputBuffer = new AudioBuffer(self, [_.outputBufferL, _.outputBufferR]);
-        } else {
-            this.outputBuffer = new AudioBuffer(self, [_.outputBufferL]);
-        }
+        this.playbackTime = self.timeContext.currentTime;
+        this.inputBuffer  = new AudioBuffer(self, _.inputBuffers);
+        this.outputBuffer = new AudioBuffer(self, _.outputBuffers);
     }
 
     $.process = function(tickID) {
