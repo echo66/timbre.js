@@ -18,6 +18,7 @@
         _.bufferMix  = null;
         _.buffer     = [];
         _.isLooped   = false;
+        _.loopData   = { phaseMin: undefined, phaseMax: undefined }; 
         _.isReversed = false;
         _.duration    = 0;
         _.currentTime = 0;
@@ -87,6 +88,10 @@
                 _.duration  = _.buffer[0].length * 1000 / _.sampleRate;
                 _.currentTime = 0;
                 _.plotFlush = true;
+                if (_.isLooped) {
+                    _.loopData.phaseMin = 0;
+                    _.loopData.phaseMax = _.buffer[0].length - 1;
+                }
                 this.reverse(_.isReversed);
             }
         }
@@ -117,6 +122,30 @@
                 return this._.isLooped;
             }
         },
+        loopStart: {
+            get: function() {
+                if (this.isLooped) 
+                    return (this._.loopData.phaseMin * 1000) / this._.sampleRate;
+                else
+                    return undefined;
+            }, 
+            set: function(value) {
+                if (this._.isLooped) 
+                    this._.loopData.phaseMin = (value / 1000) * this._.sampleRate; // TODO: check if loopStart < loopEnd 
+            }
+        }, 
+        loopEnd: {
+            get: function() {
+                if (this.isLooped) 
+                    return (this._.loopData.phaseMax * 1000) / this._.sampleRate;
+                else
+                    return undefined;
+            }, 
+            set: function(value) {
+                if (this._.isLooped) 
+                    this._.loopData.phaseMax = (value / 1000) * this._.sampleRate; // TODO: check if loopStart < loopEnd 
+            }
+        }, 
         isReversed: {
             get: function() {
                 return this._.isReversed;
@@ -239,6 +268,10 @@
 
     $.loop = function(value) {
         this._.isLooped = !!value;
+        if (this._.isLooped && this._.loopData.phaseMin === undefined) {
+            this._.loopData.phaseMin = 0
+            this._.loopData.phaseMax = this._.buffer[0].length - 1;
+        }
         return this;
     };
 
@@ -286,28 +319,38 @@
             } else {
                 var pitch  = _.pitch.process(tickID).cells[0][0];
                 var phaseIncr = _.phaseIncr * pitch;
+                var p;
 
                 for (i = 0; i < imax; ++i) {
-                    cellL[i] = (bufferL[phase|0] || 0);
-                    cellR[i] = (bufferR[phase|0] || 0);
+                    p = phase|0;
+                    if (_.isReversed) {
+                        if (this._.isLooped && p < this._.loopData.phaseMin) 
+                            phase = p = this._.loopData.phaseMax;
+                    } else {
+                        if (this._.isLooped && p > this._.loopData.phaseMax) 
+                            phase = p = this._.loopData.phaseMin;
+                    }
+                        
+                    cellL[i] = (bufferL[p] || 0);
+                    cellR[i] = (bufferR[p] || 0);
                     phase += phaseIncr;
                 }
 
-                if (phase >= bufferL.length) {
-                    if (_.isLooped) {
-                        fn.nextTick(_.onlooped);
-                    } else {
-                        fn.nextTick(_.onended);
-                    }
-                } else if (phase < 0) {
-                    if (_.isLooped) {
-                        fn.nextTick(_.onlooped);
-                    } else {
-                        fn.nextTick(_.onended);
-                    }
-                }
+                // if (phase >= bufferL.length) {
+                //     if (_.isLooped) {
+                //         fn.nextTick(_.onlooped);
+                //     } else {
+                //         fn.nextTick(_.onended);
+                //     }
+                // } else if (phase < 0) {
+                //     if (_.isLooped) {
+                //         fn.nextTick(_.onlooped);
+                //     } else {
+                //         fn.nextTick(_.onended);
+                //     }
+                // }
                 _.phase = phase;
-                _.currentTime += fn.currentTimeIncr;
+                _.currentTime += this.timeContext.currentTimeIncr;
             }
 
             fn.outputSignalAR(this);

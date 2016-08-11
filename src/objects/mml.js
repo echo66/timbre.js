@@ -24,7 +24,9 @@
             mml = [mml];
         }
         _.tracks = mml.map(function(mml, i) {
-            return new MMLTrack(self, i, mml);
+        	var track = new MMLTrack(self, i, mml);
+        	track.timeContext = self.timeContext;
+        	return track;
         });
         _.currentTime = 0;
         this.playbackState = fn.PLAYING_STATE;
@@ -118,7 +120,7 @@
             if (tracks.length === 0) {
                 fn.nextTick(_.onended);
             }
-            _.currentTime += fn.currentTimeIncr;
+            _.currentTime += this.timeContext.currentTimeIncr;
         }
 
         return this;
@@ -181,11 +183,11 @@
                     }
                 }
             }
-            _.remain -= fn.currentTimeIncr;
+            _.remain -= this.timeContext.currentTimeIncr;
             if (eof) {
                 this.ended = true;
             }
-            _.currentTime += fn.currentTimeIncr;
+            _.currentTime += this.timeContext.currentTimeIncr;
         };
 
         var noteOn = function(sequencer, trackNum, noteNum, velocity) {

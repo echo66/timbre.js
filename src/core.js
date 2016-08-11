@@ -32,13 +32,72 @@
         get currentTime() {
             return this.tickID * this.currentTimeIncr;
         }, 
+        set currentTime(newCurrentTime) {
+            var self = this;
+            timbre.fn.nextTick(function() {
+                self.tickID = Math.round(newCurrentTime / self.currentTimeIncr);
+                self._emit('set-current-time');
+            });
+        }, 
         currentTimeIncr: undefined, 
         reset: function() {
             this.tickID = 0;
         }, 
         tick : function() { 
             this.tickID++; 
+        }, 
+        _listeners: new Set(), 
+        on: function(eventType, listener) {
+            if (eventType === 'set-current-time') 
+                this._listeners.add(listener);
+        }, 
+        off: function(eventType, listener) {
+            if (eventType === 'set-current-time')
+                this._listeners.delete(listener);
+        }, 
+        _emit: function(eventType) {
+            var self = this;
+            this._listeners.forEach((listener) => {
+                listener(self);
+            });
         }
+    };
+    _masterTimeContext.clone = function() {
+        return {
+            tickID: _masterTimeContext.tickID, 
+            get currentTime() {
+                return this.tickID * this.currentTimeIncr;
+            }, 
+            set currentTime(newCurrentTime) {
+                var self = this;
+                timbre.fn.nextTick(function() {
+                    self.tickID = Math.round(newCurrentTime / self.currentTimeIncr);
+                    self._emit('set-current-time');
+                });
+            }, 
+            currentTimeIncr: undefined, 
+            reset: function() {
+                this.tickID = 0;
+            }, 
+            tick : function() { 
+                this.tickID++; 
+            }, 
+            _listeners: new Set(), 
+            on: function(eventType, listener) {
+                if (eventType === 'set-current-time') 
+                    this._listeners.add(listener);
+            }, 
+            off: function(eventType, listener) {
+                if (eventType === 'set-current-time')
+                    this._listeners.delete(listener);
+            }, 
+            _emit: function(eventType) {
+                var self = this;
+                this._listeners.forEach((listener) => {
+                    listener(self);
+                });
+            }
+        };
     };
     var _timeContexts = new Set();
     _timeContexts.add(_masterTimeContext);
@@ -266,6 +325,10 @@
             return bpm;
         };
         return function(str) {
+
+            if ((typeof str) === "number")
+                return str;
+
             var m, ms, x;
             if ((m = /^(\d+(?:\.\d+)?)Hz$/i.exec(str))) {
                 return +m[1] === 0 ? 0 : 1000 / +m[1];
@@ -303,8 +366,8 @@
 
     var fn = timbre.fn = {
         SignalArray: Float32Array,
-        currentTimeIncr: 0,
         timeContexts: _timeContexts, 
+        masterTimeContext: _masterTimeContext, 
         emptycell: null,
         FINISHED_STATE: FINISHED_STATE,
         PLAYING_STATE: PLAYING_STATE,
@@ -414,9 +477,10 @@
             x = 0;
         }
         var cell = this.cells[0];
-        for (var i = 0, imax = cell.length; i < imax; ++i) {
-            cell[i] = x;
-        }
+        // for (var i = 0, imax = cell.length; i < imax; ++i) {
+        //     cell[i] = x;
+        // }
+        cell.fill(x);
     };
     fn.changeWithValue.unremovable = true;
 
@@ -426,6 +490,7 @@
         new_instance._.mul = src._.mul;
         new_instance._.add = src._.add;
         new_instance._.bypassed = src._.bypassed;
+        new_instance.timeContext = src.timeContext;
         return new_instance;
     };
 
@@ -1969,6 +2034,8 @@
             this.streammsec = 20;
             this.streamsize = 0;
             this.currentTime = 0;
+            this.beforeTicks = new Set();
+            this.afterTicks = new Set();
             this.nextTicks = new Set();
             this.inlets    = new Set();
             this.timers    = new Set();
@@ -1981,7 +2048,7 @@
 
             this.events = null;
 
-            fn.currentTimeIncr = _masterTimeContext.currentTimeIncr = this.cellsize * 1000 / this.sampleRate;
+            _masterTimeContext.currentTimeIncr = this.cellsize * 1000 / this.sampleRate;
             fn.emptycell = new fn.SignalArray(this.cellsize);
 
             this.reset(true);
@@ -2028,7 +2095,6 @@
                     }
                 }
             }
-            fn.currentTimeIncr = this.cellsize * 1000 / this.sampleRate;
             fn.emptycell = new fn.SignalArray(this.cellsize);
             return this;
         };
@@ -2078,6 +2144,8 @@
                 timeCtx.reset();
             });
             this.currentTime = 0;
+            this.beforeTicks = new Set();
+            this.afterTicks = new Set();
             this.nextTicks = new Set();
             this.inlets    = new Set();
             this.timers    = new Set();
@@ -2095,44 +2163,29 @@
             var j, jmax;
             var k, kmax = this.cellsize;
             var n = this.streamsize / this.cellsize;
-            var nextTicks;
             var timers    = this.timers;
             var inlets    = this.inlets;
             var listeners = this.listeners;
-            // var currentTimeIncr = fn.currentTimeIncr;
 
             for (i = 0; i < imax; ++i) {
                 strmL[i] = strmR[i] = 0;
             }
 
             while (n--) {
-                // ++tickID;
 
-                // for (j = 0, jmax = timers.length; j < jmax; ++j) {
-                //     if (timers[j].playbackState & 1) {
-                //         timers[j].process(tickID);
-                //     }
-                // }
+                this.beforeTicks.forEach((beforeTick) => {
+                    beforeTick();
+                });
+                this.beforeTicks.clear();
+               
                 timers.forEach((timer) => {
                     if (timer.playbackState & 1) {
-                        timer.process(tickID);
+                        timer.process(timer.timeContext.tickID);
                     }
                 });
 
-                // for (j = 0, jmax = inlets.length; j < jmax; ++j) {
-                //     x = inlets[j];
-                //     x.process(tickID);
-                //     if (x.playbackState & 1) {
-                //         tmpL = x.cells[1];
-                //         tmpR = x.cells[2];
-                //         for (k = 0, i = saved_i; k < kmax; ++k, ++i) {
-                //             strmL[i] += tmpL[k];
-                //             strmR[i] += tmpR[k];
-                //         }
-                //     }
-                // }
                 inlets.forEach((inlet) => {
-                    inlet.process(tickID);
+                    inlet.process(inlet.timeContext.tickID);
                     if (inlet.playbackState & 1) {
                         tmpL = inlet.cells[1];
                         tmpR = inlet.cells[2];
@@ -2144,35 +2197,25 @@
                 });
                 saved_i += kmax;
 
-                // for (j = 0, jmax = listeners.length; j < jmax; ++j) {
-                //     if (listeners[j].playbackState & 1) {
-                //         listeners[j].process(tickID);
-                //     }
-                // }
                 listeners.forEach((listener) => {
                     if (listener.playbackState & 1) {
-                        listener.process(tickID);
+                        listener.process(listener.timeContext.tickID);
                     }
                 });
 
-                // this.currentTime = tickID * currentTimeIncr;
-                // for (j = 0, jmax = _timeContexts.length; j < jmax; j++) {
-                //     _timeContexts[j].tick();
-                // }
                 _timeContexts.forEach((timeContext) => {
                     timeContext.tick();
                 });
-                ++tickID;
 
-                // nextTicks = this.nextTicks.splice(0);
-                // for (j = 0, jmax = nextTicks.length; j < jmax; ++j) {
-                //     nextTicks[j]();
-                // }
                 this.nextTicks.forEach((nextTick) => {
                     nextTick();
                 });
-
                 this.nextTicks.clear();
+
+                this.afterTicks.forEach((afterTick) => {
+                    afterTick();
+                });
+                this.afterTicks.clear();
             }
 
             for (i = 0; i < imax; ++i) {
@@ -2191,8 +2234,6 @@
                 }
                 strmR[i] = x;
             }
-
-            // this.tickID = tickID;
 
             var currentTime = this.currentTime;
 
@@ -2228,6 +2269,22 @@
                 func();
             } else {
                 this.nextTicks.add(func);
+            }
+        };
+
+        $.beforeTick = function(func) {
+            if (this.status === FINISHED_STATE) {
+                func();
+            } else {
+                this.beforeTicks.add(func);
+            }
+        };
+
+        $.afterTick = function(func) {
+            if (this.status === FINISHED_STATE) {
+                func();
+            } else {
+                this.afterTicks.add(func);
             }
         };
 
@@ -2410,7 +2467,6 @@
     if (typeof AudioContext !== "undefined") {
         ImplClass = function(sys) {
             var context = new AudioContext();
-            var bufSrc, jsNode;
 
             fn._audioContext = context;
 
@@ -2477,19 +2533,19 @@
                     };
                 }
 
-                bufSrc = context.createBufferSource();
-                jsNode = context.createScriptProcessor(jsn_streamsize, 2, sys.channels);
-                jsNode.onaudioprocess = onaudioprocess;
-                if (bufSrc.noteOn) {
-                    bufSrc.noteOn(0);
+                this.bufSrc = context.createBufferSource();
+                this.jsNode = context.createScriptProcessor(jsn_streamsize, 2, sys.channels);
+                this.jsNode.onaudioprocess = onaudioprocess;
+                if (this.bufSrc.noteOn) {
+                    this.bufSrc.noteOn(0);
                 }
-                bufSrc.connect(jsNode);
-                jsNode.connect(context.destination);
+                this.bufSrc.connect(this.jsNode);
+                this.jsNode.connect(context.destination);
             };
 
             this.pause = function() {
-                bufSrc.disconnect();
-                jsNode.disconnect();
+                this.bufSrc.disconnect();
+                this.jsNode.disconnect();
             };
 
             if (_envmobile) {

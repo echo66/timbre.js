@@ -68,10 +68,11 @@
     //
     // @param val The value of the node.
     // @returns The new Node that is created.
-    var Node = function(val) {
+    var Node = function(val, tree) {
         this.val = val;
         this.parent = null;
         this.balanceFactor = 0;
+        this.tree = tree;
      
         this.left = null;
         this.right = null;
@@ -89,6 +90,14 @@
      
         this.isLeftChild = function() {
             return this.parent.left == this;
+        };
+
+        this.remove = function() {
+            tree.removeNode(this);
+            if (this.previous !== null) 
+                this.previous.next = this.next;
+            if (this.next !== null) 
+                this.next.previous = this.previous;
         };
     }
 
@@ -149,7 +158,7 @@
     // @param val The value to be added.
     // @returns The new node that was added to the AVLTree.
     AVLTree.prototype.add = function(val) {
-        var newNode = new Node(val);
+        var newNode = new Node(val, this);
         this.count += 1;
      
         if (this.root == null) {
@@ -267,6 +276,9 @@
     }
 
     AVLTree.prototype.search_closest = function(val) {
+        if (!this.root)
+            return null;
+
         var currentNode = this.root;
         var closestNode = this.root;
         var minDist = Math.abs(this.comparison(val, closestNode.val));

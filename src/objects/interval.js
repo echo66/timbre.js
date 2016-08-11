@@ -133,7 +133,7 @@
                     _.count += 1;
                 }
             }
-            _.currentTime += fn.currentTimeIncr;
+            _.currentTime += this.timeContext.currentTimeIncr;
 
             if (_.currentTime >= _.timeout) {
                 fn.nextTick(_.onended);

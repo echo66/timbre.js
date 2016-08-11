@@ -11,7 +11,7 @@
 
         var _ = this._;
         this.playbackState = fn.FINISHED_STATE;
-        _.currentTime = 0;
+        // _.currentTime = 0;
         _.samplesMax = 0;
         _.samples    = 0;
         _.onended = fn.make_onended(this);
@@ -55,18 +55,18 @@
                 return this._.timeout;
             }
         },
-        currentTime: {
-            get: function() {
-                return this._.currentTime;
-            }
-        }
+        // currentTime: {
+        //     get: function() {
+        //         return this._.currentTime;
+        //     }
+        // }
     });
 
     $.bang = function() {
         var _ = this._;
         this.playbackState = fn.PLAYING_STATE;
         _.samples = _.samplesMax;
-        _.currentTime = 0;
+        // _.currentTime = 0;
         _.emit("bang");
         return this;
     };
@@ -89,7 +89,7 @@
                 }
                 fn.nextTick(_.onended);
             }
-            _.currentTime += fn.currentTimeIncr;
+            // _.currentTime += this.timeContext.currentTimeIncr;
         }
         return this;
     };

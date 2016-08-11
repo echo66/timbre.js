@@ -152,6 +152,12 @@
 		return this;
 	};
 
+	PseudoAudioParam.prototype.cancelAt = function(time) {
+		var node = this.events.remove({ time: time });
+
+		return this;
+	};
+
 	PseudoAudioParam.prototype.getValueAtTime = function(time) {
 		var events = this.events;
 		var value = this.default.value;
@@ -161,8 +167,11 @@
 		var obj = { time: time };
 		var node = this.events.search_closest({ time: time });
 
+		if (!node) 
+			return value;
+
 		// Se fôr o nó exacto, não faz nada.
-		// Se houver um nós com chave menor, usa esse nó.
+		// Se houver um nó com chave menor, usa esse nó.
 		//	Senão Se existir um nó seguinte, usa esse nó.
 
 		if (!this.events.equality(obj, node.val)) {

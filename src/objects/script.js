@@ -66,7 +66,7 @@
             set: function(value) {
                 var _ = this._;
                 if (_.bufferSize === 0) {
-                    if ([256, 512, 1024, 2048, 4096, 8192, 16384].indexOf(value) !== -1) {
+                    if ([16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384].indexOf(value) !== -1) {
                         _.bufferSize = value;
                         _.bufferMask = value - 1;
                         _.duration = value / _.sampleRate;

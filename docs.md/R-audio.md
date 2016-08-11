@@ -10,7 +10,7 @@ en: `T("audio")` is an instance of `T("buffer")` that can load an audio file and
 ja: 音声ファイルを読みこむ `T("buffer")` オブジェクトです。以下の例では amen.wav か、このページにドラッグ & ドロップしたファイル(Chromeのみ) を読み込んで再生しています。
 
 ```timbre
-var src = window.getDraggedFile() || "/timbre.js/misc/audio/amen.wav";
+var src = window.getDraggedFile() || "../misc/audio/amen.wav";
 
 T("audio").loadthis(src, function() {
   this.plot({target:canvas}).play();
@@ -37,8 +37,8 @@ ja:  - `load()` と同じですが、 `this` が返ります
 ja: `promise` は jQuery の Deferred.promise とほぼ同等なので jQuery.when の入力に使用できます。
 
 ```timbre
-var audio1 = T("audio", {loop:true}).load("/timbre.js/misc/audio/drum.wav");
-var audio2 = T("audio", {loop:true}).load("/timbre.js/misc/audio/guitar.wav");
+var audio1 = T("audio", {loop:true}).load("../misc/audio/drum.wav");
+var audio2 = T("audio", {loop:true}).load("../misc/audio/guitar.wav");
 
 $.when(audio1, audio2).then(function() {
   T("+", audio1, audio2).play();

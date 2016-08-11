@@ -116,7 +116,7 @@
                     }
                 }
             }
-            _.currentTime += fn.currentTimeIncr;
+            _.currentTime += this.timeContext.currentTimeIncr;
             if (emit) {
                 _.emit(emit);
             }

@@ -8,9 +8,10 @@
 		var _ = this._;
 
 		_.units = 'beats';
-		_.bpmTimeline = new timbre.modules.BPMTimeline(120);
+		_.bpmTimeline = undefined;
 		_.defaultValue = 0;
 		_.automation = new timbre.modules.PseudoAudioParam(_.defaultValue);
+		_.changed = false;
 
 		_.plotFlush = true;
 		_.ar = false;
@@ -25,8 +26,8 @@
 				return this._.bpmTimeline;
 			}, 
 			set : function(value) {
-				if (value instanceof timbre.modules.BPMTimeline)
-					this._.bpmTimeline = value;
+				this._.bpmTimeline = value;
+				this._.changed = true;
 			}
 		}, 
 		automation : {
@@ -34,8 +35,10 @@
 				return this._.automation;
 			}, 
 			set : function(value) {
-				if (value instanceof timbre.modules.PseudoAudioParam)
+				if (value instanceof timbre.modules.PseudoAudioParam) {
 					this._.automation = value;
+					this._.changed = true;
+				}
 			}
 		}, 
 		units : {
@@ -52,16 +55,10 @@
 			}, 
 			set : function(value) {
 				this._.automation.default.value = value;
-			}
-		}, 
-		value : {
-			get : function() {
-				switch(this.units) {
-					case "seconds": 
-						return this
-				}
+				this._.changed = true;
 			}
 		}
+
 	});
 
 	$.getValueAt = function(time, fromUnits) {
@@ -69,7 +66,7 @@
 			return this.automation.getValueAt(time);
 		}
 		if (this.units === 'beats') {
-			return this.automation.getValueAtTime(this.bpmTimeline.beat(time));
+			return this.automation.getValueAtTime(this.bpmTimeline.beats(time));
 		}
 		if (this.units === 'seconds') {
 			return this.automation.getValueAtTime(this.bpmTimeline.seconds(time));	
@@ -79,44 +76,51 @@
 	$.setValueAtTime = function(value, startTime) {
 		this._.automation.setValueAtTime(value, startTime);
 		this._.plotFlush = true;
+		this._.changed = true;
 	};
 
 	$.linearRampToValueAtTime = function(value, endTime) {
 		this._.automation.linearRampToValueAtTime(value, endTime);
 		this._.plotFlush = true;
+		this._.changed = true;
 	};
 
 	$.exponentialRampToValueAtTime = function(value, endTime) {
 		this._.automation.exponentialRampToValueAtTime(value, endTime);
 		this._.plotFlush = true;
+		this._.changed = true;
 	};
 
 	$.setTargetAtTime = function(value, startTime, timeConstant) {
 		this._.automation.setTargetAtTime(value, startTime, timeConstant);
 		this._.plotFlush = true;
+		this._.changed = true;
 	};
 
 	$.setValueCurveAtTime = function(value, startTime, duration) {
 		this._.automation.setValueCurveAtTime(value, startTime, duration);
 		this._.plotFlush = true;
+		this._.changed = true;
 	};
 
 	$.cancelScheduledValues = function(time) {
 		this._.automation.cancelScheduledValues(time);
-		if (this._.automation.events.length == 0) 
-			this._.automation.setValueAtTime(this._.automation.value(), 0);
+		// if (this._.automation.events.length === 0) 
+		// 	this._.automation.setValueAtTime(this._.automation.value(), 0);
 		this._.plotFlush = true;
+		this._.changed = true;
 	};
 
 	$.cancelAllEvents = function() {
 		this._.automation.cancelAllEvents();
-		this._.automation.setValueAtTime(this._.automation.value(), 0);
+		// this._.automation.setValueAtTime(this._.automation.value(), 0);
 		this._.plotFlush = true;
+		this._.changed = true;
 	};
 
 	$.process = function(tickID) {
 		var _ = this._;
-		if (this.tickID !== tickID) {
+		if (this.tickID !== tickID || this._.changed) {
 			this.tickID = tickID;
 
 			var cellL = this.cells[1];
@@ -136,15 +140,15 @@
 			if (_.ar) {
 				for (i = 0; i < imax; ++i) {
 					// TODO: the AR option was not tested!
-					var time = (this.units === 'beats')? this.bpmTimeline.beat(currentTime) : currentTime;
-					var value = _.automation.getValueAtTime(time);
+					var time = (this.units === 'beats')? this.bpmTimeline.beats(currentTime) : currentTime;
+					var value = _.automation.getValueAtTime(time, this.units);
 					cellL[i] *= value;
 					cellR[i] *= value;
-					currentTime += 1000 / T.sampleRate;
+					currentTime += 1000 / this._.sampleRate;
 				}
 			} else {
-				var time = (this.units === 'beats')? this.bpmTimeline.beat(currentTime) : currentTime;
-				var value = _.automation.getValueAtTime(time);
+				var time = (this.units === 'beats')? this.bpmTimeline.beats(currentTime) : currentTime;
+				var value = _.automation.getValueAtTime(time, this.units);
 				// console.log([currentTime, time, value]);
 				for (i = 0; i < imax; ++i) {
 					cellL[i] *= value;
@@ -154,6 +158,8 @@
 
 			timbre.fn.outputSignalAR(this);
 		}
+
+		this._.changed = false;
 
 		return this;
 	}
